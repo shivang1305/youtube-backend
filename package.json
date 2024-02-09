@@ -1,0 +1,22 @@
+{
+  "name": "namaste-backend",
+  "version": "1.0.0",
+  "description": "A backend course for learning backend dev using javascript",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [
+    "backend",
+    "javascript",
+    "node",
+    "express",
+    "mongodb"
+  ],
+  "author": "Shivang Sharma",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}
