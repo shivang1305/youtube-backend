@@ -10,7 +10,7 @@ connectDB()
   .then(() => {
     // check for any error after mongodb connection
     app.on("error", (err) => {
-      console.log("Error befor MongoDB Connection: ", err);
+      console.log("Error before MongoDB Connection: ", err);
       throw err;
     });
 
