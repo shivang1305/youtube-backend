@@ -18,4 +18,10 @@ app.use(express.static("public"));
 // server can only access those cookies in a secure way and perform the operations on those cookies.
 app.use(cookieParser());
 
+// import routes
+import userRouter from "./routes/user.routes.js";
+
+// routes declaration
+app.use("/api/v1/users", userRouter);
+
 export default app;
