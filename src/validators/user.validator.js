@@ -2,7 +2,7 @@
 import { body, validationResult } from "express-validator";
 
 // Define the validator middleware function
-export const validateRegisterUser = [
+const validateRegisterUser = [
   // Validate fullName
   body("fullName").trim().notEmpty().withMessage("Full name is required"),
 
@@ -36,3 +36,28 @@ export const validateRegisterUser = [
     next();
   },
 ];
+
+const validateLoginUser = [
+  // Validate email
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .bail()
+    .isEmail()
+    .withMessage("Invalid email address"),
+
+  // Validate password
+  body("password").trim().notEmpty().withMessage("Password is required").bail(),
+
+  // Check for validation errors
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  },
+];
+
+export { validateRegisterUser, validateLoginUser };

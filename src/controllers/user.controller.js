@@ -4,6 +4,20 @@ import ApiError from "../utils/ApiError.js";
 import { uploadOnCloudinary } from "../utils/Cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
+const generateAccessAndRefreshToken = async (userId) => {
+  const user = await User.findById(userId);
+
+  const accessToken = user.generateAccessToken();
+  const refreshToken = user.generateRefreshToken();
+
+  // update the user instance with generated refresh token
+  user.refreshToken = refreshToken;
+  // save the updated user instance in db without any validation
+  await user.save({ validateBeforeSave: false });
+
+  return { accessToken, refreshToken };
+};
+
 const registerUser = asyncHandler(async (req, res) => {
   // get the user data from the req
   const { fullName, username, email, password } = req.body;
@@ -65,4 +79,46 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, createdUser, "User registered successfully"));
 });
 
-export { registerUser };
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  // check for user in the db
+  const user = await User.findOne({ email });
+
+  if (!user) throw new ApiError(401, "user does not exists");
+
+  // match the password
+  const isPasswordValid = user.isPasswordCorrect(password);
+
+  if (!isPasswordValid) throw new ApiError(401, "user credentials invalid");
+
+  // generate the access & refresh token
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id
+  );
+
+  // send the tokens in secure cookies
+  user.refreshToken = refreshToken;
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(201)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        201,
+        {
+          accessToken,
+          refreshToken,
+        },
+        "User is loggen in successfully"
+      )
+    );
+});
+
+export { registerUser, loginUser };
