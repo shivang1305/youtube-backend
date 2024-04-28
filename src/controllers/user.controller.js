@@ -117,7 +117,7 @@ const loginUser = asyncHandler(async (req, res) => {
           accessToken,
           refreshToken,
         },
-        "User is loggen in successfully"
+        "User is logged in successfully"
       )
     );
 });
