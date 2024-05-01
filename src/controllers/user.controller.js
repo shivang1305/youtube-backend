@@ -10,6 +10,7 @@ const options = {
   secure: true,
 };
 
+// utility function
 const generateAccessAndRefreshToken = async (userId) => {
   const user = await User.findById(userId);
 
@@ -24,6 +25,7 @@ const generateAccessAndRefreshToken = async (userId) => {
   return { accessToken, refreshToken };
 };
 
+// auth controllers
 const registerUser = asyncHandler(async (req, res) => {
   // get the user data from the req
   const { fullName, username, email, password } = req.body;
@@ -136,6 +138,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
+// update controllers
 const renewAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies?.refreshToken || req.body?.refreshToken;
@@ -211,6 +214,34 @@ const updateUserDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "User details are updated successfully"));
 });
 
+const updateUserAvatar = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path;
+
+  if (!avatarLocalPath) throw new ApiError(400, "Avatar image is not provided");
+
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+  if (!avatar.url)
+    throw new ApiError(400, "Error while uploading avatar image");
+
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        avatar: avatar.url,
+      },
+    },
+    {
+      new: true,
+    }
+  ).select("-password -refreshToken");
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, user, "User avatar is updated successfully"));
+});
+
+// get user controller
 const getCurrentUser = asyncHandler(async (req, res) => {
   res
     .status(201)
@@ -225,4 +256,5 @@ export {
   changePassword,
   getCurrentUser,
   updateUserDetails,
+  updateUserAvatar,
 };

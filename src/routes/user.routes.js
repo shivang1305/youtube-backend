@@ -39,5 +39,14 @@ router.route("/logout").get(verifyJWT, logoutUser);
 router.route("/renew-access-token").get(verifyJWT, renewAccessToken);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/update-profile").post(verifyJWT, updateUserDetails);
+router.route("/update-avatar").post(
+  verifyJWT,
+  upload.fields([
+    {
+      name: "avatar",
+      maxCount: 1,
+    },
+  ])
+);
 
 export default router;
