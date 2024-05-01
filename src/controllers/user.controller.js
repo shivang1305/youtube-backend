@@ -196,18 +196,45 @@ const changePassword = asyncHandler(async (req, res) => {
 const updateUserDetails = asyncHandler(async (req, res) => {
   const { fullName, email } = req.body;
 
-  if (!fullName || !email) throw new ApiError(400, "All fields are required");
+  if (!fullName && !email)
+    throw new ApiError(400, "No fields are provided for updation");
 
-  const user = await User.findByIdAndUpdate(
-    req.user?._id,
-    {
-      $set: {
-        fullName,
-        email,
+  let user;
+
+  if (fullName && email) {
+    user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: {
+          fullName,
+          email,
+        },
       },
-    },
-    { new: true }
-  ).select("-password -refreshToken");
+      { new: true }
+    ).select("-password -refreshToken");
+  } else if (fullName) {
+    user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: {
+          fullName,
+        },
+      },
+      {
+        new: true,
+      }
+    ).select("-password -refreshToken");
+  } else if (email) {
+    user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: {
+          email,
+        },
+      },
+      { new: true }
+    ).select("-password -refreshToken");
+  }
 
   return res
     .status(200)

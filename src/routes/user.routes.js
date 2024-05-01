@@ -5,6 +5,7 @@ import {
   logoutUser,
   registerUser,
   renewAccessToken,
+  updateUserAvatar,
   updateUserDetails,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -46,7 +47,8 @@ router.route("/update-avatar").post(
       name: "avatar",
       maxCount: 1,
     },
-  ])
+  ]),
+  updateUserAvatar
 );
 
 export default router;
