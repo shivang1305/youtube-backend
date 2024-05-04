@@ -1,7 +1,10 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
-import { uploadOnCloudinary } from "../utils/Cloudinary.js";
+import {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} from "../utils/Cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 
@@ -242,7 +245,9 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 });
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
-  const avatarLocalPath = req.file?.path;
+  const avatarLocalPath = req.files?.avatar[0]?.path;
+
+  const oldFileName = req.user?.avatar.split("/").slice(-1)[0].split(".")[0];
 
   if (!avatarLocalPath) throw new ApiError(400, "Avatar image is not provided");
 
@@ -262,6 +267,8 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
       new: true,
     }
   ).select("-password -refreshToken");
+
+  deleteFromCloudinary(oldFileName);
 
   return res
     .status(201)
