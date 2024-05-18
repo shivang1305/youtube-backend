@@ -268,11 +268,50 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     }
   ).select("-password -refreshToken");
 
+  // remove the old file from cloudinary after the updated one is uploaded
   deleteFromCloudinary(oldFileName);
 
   return res
     .status(201)
     .json(new ApiResponse(201, user, "User avatar is updated successfully"));
+});
+
+const updateUserCoverImage = asyncHandler(async (req, res) => {
+  const coverImageLocalPath = req.files?.coverImage[0].path;
+
+  const oldFileName = req.user?.coverImage
+    .split("/")
+    .slice(-1)[0]
+    .split(".")[0];
+
+  if (!coverImageLocalPath)
+    throw new ApiError(400, "Cover Image is not provided");
+
+  const coverImage = uploadOnCloudinary(coverImageLocalPath);
+
+  if (!coverImage.url)
+    throw new ApiError(400, "Error while uploading cover image");
+
+  const user = User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        coverImage: coverImage.url,
+      },
+    },
+    {
+      new: true,
+    }
+  ).select("-password -refreshToken");
+
+  // remove the old file from cloudinary after the updated one is uploaded
+  deleteFromCloudinary(oldFileName);
+
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(201, user, "User cover image is updated successfully")
+    );
 });
 
 // get user controller
@@ -412,6 +451,7 @@ export {
   getCurrentUser,
   updateUserDetails,
   updateUserAvatar,
+  updateUserCoverImage,
   getUserChannelProfile,
   getWatchHistory,
 };
