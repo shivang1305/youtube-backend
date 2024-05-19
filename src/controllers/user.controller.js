@@ -100,7 +100,7 @@ const loginUser = asyncHandler(async (req, res) => {
   if (!user) throw new ApiError(401, "user does not exists");
 
   // match the password
-  const isPasswordValid = user.isPasswordCorrect(password);
+  const isPasswordValid = await user.isPasswordCorrect(password);
 
   if (!isPasswordValid) throw new ApiError(401, "user credentials invalid");
 
@@ -130,8 +130,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(req.user._id, {
-    $set: {
-      refreshToken: undefined,
+    $unset: {
+      refreshToken: 1, // this will remove the field from db
     },
   });
 
