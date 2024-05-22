@@ -92,7 +92,7 @@ const updateVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
   const { title, description } = req.body;
-  const thumbnailLocalPath = req.file.path;
+  const thumbnailLocalPath = req?.file?.path;
 
   if (!title && !description && !thumbnailLocalPath)
     throw new ApiError(400, "No fields are provided for updation");
@@ -155,11 +155,11 @@ const updateVideo = asyncHandler(async (req, res) => {
     );
 
     deleteFromCloudinary(oldThumbnail);
-
-    return res
-      .status(200)
-      .json(new ApiResponse(201, video, "video details updated successfully"));
   }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(201, video, "video details updated successfully"));
 });
 
 export { publishVideo, getVideoById, updateVideo };
