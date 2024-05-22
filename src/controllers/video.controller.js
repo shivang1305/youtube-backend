@@ -47,7 +47,7 @@ const publishVideo = asyncHandler(async (req, res) => {
 const getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
-  if (!videoId.trim()) throw new ApiError(400, "videoId is missing");
+  if (!videoId.trim()) throw new ApiError(404, "videoId is missing");
 
   const video = await Video.aggregate([
     {
@@ -81,7 +81,7 @@ const getVideoById = asyncHandler(async (req, res) => {
     },
   ]);
 
-  if (!video) throw new ApiError(401, "video not found");
+  if (!video.length) throw new ApiError(404, "video not found");
 
   return res
     .status(200)
@@ -157,9 +157,23 @@ const updateVideo = asyncHandler(async (req, res) => {
     deleteFromCloudinary(oldThumbnail);
   }
 
+  if (!video) throw new ApiError(404, "video not found");
+
   return res
     .status(200)
     .json(new ApiResponse(201, video, "video details updated successfully"));
 });
 
-export { publishVideo, getVideoById, updateVideo };
+const deleteVideo = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+
+  const video = await Video.findByIdAndDelete(videoId);
+
+  if (!video) throw new ApiError(400, "video not found");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, video, "video deleted successfully"));
+});
+
+export { publishVideo, getVideoById, updateVideo, deleteVideo };
