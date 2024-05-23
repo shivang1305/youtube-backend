@@ -91,6 +91,8 @@ const getVideoById = asyncHandler(async (req, res) => {
 const updateVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
+  if (!videoId.trim()) throw new ApiError(404, "videoId is missing");
+
   const { title, description } = req.body;
   const thumbnailLocalPath = req?.file?.path;
 
@@ -167,6 +169,8 @@ const updateVideo = asyncHandler(async (req, res) => {
 const deleteVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
+  if (!videoId.trim()) throw new ApiError(404, "videoId is missing");
+
   const video = await Video.findByIdAndDelete(videoId);
 
   if (!video) throw new ApiError(400, "video not found");
@@ -176,4 +180,29 @@ const deleteVideo = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, video, "video deleted successfully"));
 });
 
-export { publishVideo, getVideoById, updateVideo, deleteVideo };
+const togglePublishStatus = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+
+  if (!videoId.trim()) throw new ApiError(404, "videoId is missing");
+
+  const video = await Video.findById(videoId);
+
+  if (!video) throw new ApiError(404, "video not found");
+
+  video.isPublished = !video.isPublished;
+  await video.save();
+
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(201, video, "video published status toggled successfully")
+    );
+});
+
+export {
+  publishVideo,
+  getVideoById,
+  updateVideo,
+  deleteVideo,
+  togglePublishStatus,
+};
