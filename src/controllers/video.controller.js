@@ -8,6 +8,10 @@ import { Video } from "../models/video.model.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import mongoose from "mongoose";
 
+const getAllVideos = asyncHandler(async (req, res) => {
+  //TODO
+});
+
 const publishVideo = asyncHandler(async (req, res) => {
   const { title, description } = req.body;
 
@@ -34,7 +38,7 @@ const publishVideo = asyncHandler(async (req, res) => {
   });
 
   // check if the video is created in the db or not
-  const publishedVideo = await Video.findById(video._id).select();
+  const publishedVideo = await Video.findById(video._id);
 
   if (!publishedVideo)
     throw new ApiError(500, "error while publishing the video");
@@ -200,6 +204,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 });
 
 export {
+  getAllVideos,
   publishVideo,
   getVideoById,
   updateVideo,
