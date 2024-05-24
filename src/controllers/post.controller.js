@@ -21,9 +21,11 @@ const createPost = asyncHandler(async (req, res) => {
 
   const createdPost = await Post.findById(post._id);
 
-  if (!createPost) throw new ApiError(500, "error while creating the post");
+  if (!createdPost) throw new ApiError(500, "error while creating the post");
 
   return res
     .status(200)
     .json(new ApiResponse(200, post, "post created successfully"));
 });
+
+export { createPost };
