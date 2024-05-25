@@ -6,9 +6,9 @@ import ApiResponse from "../utils/ApiResponse.js";
 
 const createPost = asyncHandler(async (req, res) => {
   const { content } = req.body;
-  const imageLocalPath = req.file.path;
+  const imageLocalPath = req?.file?.path;
 
-  if (!content) throw new ApiError(400, "no content found for the post");
+  if (!content) throw new ApiError(404, "no content found for the post");
 
   let image;
   if (imageLocalPath) image = await uploadOnCloudinary(imageLocalPath);
@@ -28,4 +28,21 @@ const createPost = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, post, "post created successfully"));
 });
 
-export { createPost };
+const getUserPosts = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) throw new ApiError(404, "userId not found");
+
+  // list of all the posts from the user
+  const posts = await Post.find({ owner: userId });
+
+  console.log(posts);
+
+  if (!posts.length) throw new ApiError(404, "no post found for this user");
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, posts, "posts fetched sucessfully"));
+});
+
+export { createPost, getUserPosts };
