@@ -28,6 +28,8 @@ router.route("/publish").post(
 
 router.route("/video/:videoId").get(getVideoById);
 
+// update video api does not allow to change/update the video itself
+// for that you have to delete the video and publish a new video
 router.route("/update/:videoId").patch(upload.single("thumbnail"), updateVideo);
 
 router.route("/delete/:videoId").delete(deleteVideo);
