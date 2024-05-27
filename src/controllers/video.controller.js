@@ -126,6 +126,8 @@ const updateVideo = asyncHandler(async (req, res) => {
     deleteFromCloudinary(oldThumbnail);
   }
 
+  video.save();
+
   return res
     .status(200)
     .json(new ApiResponse(201, video, "video details updated successfully"));
