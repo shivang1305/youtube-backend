@@ -36,8 +36,6 @@ const getUserPosts = asyncHandler(async (req, res) => {
   // list of all the posts from the user
   const posts = await Post.find({ owner: userId });
 
-  console.log(posts);
-
   if (!posts.length) throw new ApiError(404, "no post found for this user");
 
   return res
@@ -45,4 +43,41 @@ const getUserPosts = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, posts, "posts fetched sucessfully"));
 });
 
-export { createPost, getUserPosts };
+const updatePosts = asyncHandler(async (req, res) => {
+  const { postId } = req.params;
+  const { content } = req.body;
+  const imageLocalPath = req?.file?.path;
+
+  if (!postId.trim()) throw new ApiError(404, "postId not found");
+
+  if (!content && !imageLocalPath)
+    throw new ApiError(404, "no data is provided to update");
+
+  const post = await Post.findById(postId);
+
+  if (!post) throw new ApiError(404, "post not found");
+
+  if (content) post.content = content;
+  if (imageLocalPath) {
+    let oldImage;
+
+    oldImage = post.image.split("/").slice(-1)[0].split(".")[0];
+
+    const image = await uploadOnCloudinary(thumbnailLocalPath);
+
+    if (!image.url)
+      throw new ApiError(401, "Error while uploading thumbnail on cloudinary");
+
+    post.image = image?.url;
+
+    deleteFromCloudinary(oldImage);
+  }
+
+  post.save();
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, post, "post details updated successfully"));
+});
+
+export { createPost, getUserPosts, updatePosts };
