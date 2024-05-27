@@ -103,45 +103,16 @@ const updateVideo = asyncHandler(async (req, res) => {
   if (!title && !description && !thumbnailLocalPath)
     throw new ApiError(400, "No fields are provided for updation");
 
-  let video;
+  const video = await Video.findById(videoId);
 
-  if (title && description) {
-    video = await Video.findByIdAndUpdate(
-      videoId,
-      {
-        $set: {
-          title,
-          description,
-        },
-      },
-      { new: true }
-    );
-  } else if (title) {
-    video = await Video.findByIdAndUpdate(
-      videoId,
-      {
-        $set: {
-          title,
-        },
-      },
-      { new: true }
-    );
-  } else if (description) {
-    video = await Video.findByIdAndUpdate(
-      videoId,
-      {
-        $set: {
-          description,
-        },
-      },
-      { new: true }
-    );
-  }
+  if (!video) throw new ApiError(404, "video not found");
+
+  if (title) video.title = title;
+  if (description) video.description = description;
 
   // updation of the thumbnail of video
   if (thumbnailLocalPath) {
     let oldThumbnail;
-    if (!video) video = await Video.findById(videoId);
 
     oldThumbnail = video.thumbnail.split("/").slice(-1)[0].split(".")[0];
 
@@ -150,20 +121,10 @@ const updateVideo = asyncHandler(async (req, res) => {
     if (!thumbnail.url)
       throw new ApiError(401, "Error while uploading thumbnail on cloudinary");
 
-    video = await Video.findByIdAndUpdate(
-      videoId,
-      {
-        $set: {
-          thumbnail: thumbnail?.url,
-        },
-      },
-      { new: true }
-    );
+    video.thumbnail = thumbnail?.url;
 
     deleteFromCloudinary(oldThumbnail);
   }
-
-  if (!video) throw new ApiError(404, "video not found");
 
   return res
     .status(200)
