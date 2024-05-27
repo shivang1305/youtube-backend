@@ -80,4 +80,18 @@ const updatePosts = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, post, "post details updated successfully"));
 });
 
-export { createPost, getUserPosts, updatePosts };
+const deletePosts = asyncHandler(async (req, res) => {
+  const { postId } = req.params;
+
+  if (!postId) throw new ApiError(404, "postId is missing");
+
+  const post = await Post.findByIdAndDelete(postId);
+
+  if (!post) throw new ApiError(404, "post not found");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, post, "post deleted successfully"));
+});
+
+export { createPost, getUserPosts, updatePosts, deletePosts };
