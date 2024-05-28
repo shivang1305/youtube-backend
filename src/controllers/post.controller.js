@@ -73,7 +73,7 @@ const updatePosts = asyncHandler(async (req, res) => {
     deleteFromCloudinary(oldImage);
   }
 
-  post.save();
+  await post.save();
 
   return res
     .status(201)
