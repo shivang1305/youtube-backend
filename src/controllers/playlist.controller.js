@@ -25,7 +25,28 @@ const createPlaylist = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, playlist, "playlist created successfully"));
 });
 
-// TODO: testing of this api is pending
+const addVideo = asyncHandler(async (req, res) => {
+  const { playlistId, videoId } = req.params;
+
+  if (!playlistId) throw new ApiError(404, "playlistId is missing");
+  if (!videoId) throw new ApiError(404, "videoId is missing");
+
+  const playlist = await Playlist.findById(playlistId);
+
+  if (!playlist) throw new ApiError(404, "playlist not found");
+
+  if (!playlist?.videos?.include(videoId)) {
+    playlist?.videos?.push(videoId);
+    await playlist.save();
+  }
+
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(201, playlist, "video added to playlist successfully")
+    );
+});
+
 const getUserPlaylists = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
@@ -57,4 +78,4 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     );
 });
 
-export { createPlaylist, getUserPlaylists };
+export { createPlaylist, addVideo, getUserPlaylists };
