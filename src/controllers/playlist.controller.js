@@ -47,6 +47,34 @@ const addVideo = asyncHandler(async (req, res) => {
     );
 });
 
+const removeVideo = asyncHandler(async (req, res) => {
+  const { playlistId, videoId } = req.params;
+
+  if (!playlistId) throw new ApiError(404, "playlistId is missing");
+  if (!videoId) throw new ApiError(404, "videoId is missing");
+
+  const playlist = await Playlist.findById(playlistId);
+
+  if (!playlist) throw new ApiError(404, "playlist not found");
+
+  const videos = playlist.videos;
+
+  if (!videos.includes(videoId))
+    throw new ApiError(404, "video not a part of playlist");
+
+  const targetIndex = videos.indexOf(videoId);
+  if (targetIndex > -1) videos.splice(targetIndex, 1);
+
+  playlist.videos = videos;
+  await playlist.save();
+
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(201, playlist, "video delete from playlist successfully")
+    );
+});
+
 const getUserPlaylists = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
@@ -78,4 +106,4 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     );
 });
 
-export { createPlaylist, addVideo, getUserPlaylists };
+export { createPlaylist, addVideo, removeVideo, getUserPlaylists };
