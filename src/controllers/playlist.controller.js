@@ -75,6 +75,29 @@ const removeVideo = asyncHandler(async (req, res) => {
     );
 });
 
+const updatePlaylist = asyncHandler(async (req, res) => {
+  const { playlistId } = req.params;
+  const { name, description } = req.body;
+
+  if (!playlistId) throw new ApiError(404, "playlistId is missing");
+
+  if (!name && !description)
+    throw new ApiError(404, "no data provided to update playlist");
+
+  const playlist = await Playlist.findById(playlistId);
+
+  if (!playlist) throw new ApiError(404, "playlist not found");
+
+  if (name) playlist.name = name;
+  if (description) playlist.description = description;
+
+  await playlist.save();
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, playlist, "playlist is updated successfully"));
+});
+
 const getUserPlaylists = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
@@ -106,4 +129,10 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     );
 });
 
-export { createPlaylist, addVideo, removeVideo, getUserPlaylists };
+export {
+  createPlaylist,
+  addVideo,
+  removeVideo,
+  updatePlaylist,
+  getUserPlaylists,
+};
