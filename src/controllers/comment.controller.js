@@ -60,4 +60,10 @@ const deleteComment = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, comment, "comment deleted successfully"));
 });
 
+const getVideoComments = asyncHandler(async (req, res) => {
+  //TODO: get all comments for a video
+  const { videoId } = req.params;
+  const { page = 1, limit = 10 } = req.query;
+});
+
 export { addComment, updateComment, deleteComment };
