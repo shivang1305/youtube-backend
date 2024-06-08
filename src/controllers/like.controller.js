@@ -4,27 +4,41 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
-// toggle ---> search for video, post and comment in the like object
-// if exists ---> remove that from the like object
-// if not exists ---> add that into the like object
+// like object for a particular video, post, comment
 
 const toggleLikeVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
-  // search for the like object in db for the curr logged in user
-  const like = await Like.find({
-    likedBy: new mongoose.Types.ObjectId(req.user._id),
+  if (!videoId) throw new ApiError(404, "videoId is missing");
+
+  // find the like object on the given video by the logged in user
+  const isLiked = await Like.findOne({
+    video: videoId,
+    likedBy: req.user._id,
   });
 
-  if (!like)
-    await Like.create({
-      // create a like object for this user
+  let videoLiked = false;
+
+  if (!isLiked) {
+    // like the video --> toggle like on
+    const like = await Like.create({
+      video: videoId,
+      likedBy: req.user._id,
     });
-  else {
-    // check if the video exists in the like obj
-    // if exits ---> remove the video
-    // if don't exist ---> add the video
+
+    videoLiked = true;
+
+    if (!like)
+      throw new ApiError(500, "Something went wrong while creating a like");
+  } else {
+    await Like.findByIdAndDelete(isLiked._id); // toggle like off
   }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, { videoLiked }, "video like toggled successfully")
+    );
 });
 
 // TODO: testing of the api is pending, since the likes are not created in db
