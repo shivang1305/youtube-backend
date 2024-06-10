@@ -43,8 +43,18 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "This email or username already exists");
 
   // handle the uploading of files to cloudinary
-  const avatarLocalPath = req.files?.avatar[0]?.path;
-  let coverImageLocalPath;
+  let avatar, coverImage;
+
+  // check coverImage is provided or not
+  if (
+    req.files &&
+    Array.isArray(req.files.avatar) &&
+    req.files.avatar.length > 0
+  ) {
+    let avatarLocalPath = req.files.avatar[0]?.path;
+    avatar = await uploadOnCloudinary(avatarLocalPath);
+    if (!avatar) throw new ApiError(400, "avatar file not uploaded");
+  }
 
   // check coverImage is provided or not
   if (
@@ -52,23 +62,18 @@ const registerUser = asyncHandler(async (req, res) => {
     Array.isArray(req.files.coverImage) &&
     req.files.coverImage.length > 0
   ) {
-    coverImageLocalPath = req.files.coverImage[0]?.path;
+    let coverImageLocalPath = req.files.coverImage[0]?.path;
+    coverImage = await uploadOnCloudinary(coverImageLocalPath);
+    if (!coverImage) throw new ApiError(400, "cover image file not uploaded");
   }
 
   // console.log("Avatar Local Path: ", avatarLocalPath);
   // console.log("Cover Image Local Path: ", coverImageLocalPath);
 
-  if (!avatarLocalPath) throw new ApiError(400, "avatar file is required");
-
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
-  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
-
-  if (!avatar) throw new ApiError(400, "avatar file not uploaded");
-
   // create the user in db
   const user = await User.create({
     fullName,
-    avatar: avatar.url,
+    avatar: avatar?.url || "",
     coverImage: coverImage?.url || "",
     email,
     password,
