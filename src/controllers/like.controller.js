@@ -80,6 +80,39 @@ const toggleLikeComment = asyncHandler(async (req, res) => {
     );
 });
 
+const toggleLikePost = asyncHandler(async (req, res) => {
+  const { postId } = req.params;
+
+  if (!postId) throw new ApiError(404, "postId is missing");
+
+  const isLiked = await Like.findOne({
+    post: postId,
+    likedBy: req.user._id,
+  });
+
+  let postLiked = false;
+
+  if (!isLiked) {
+    const postLike = await Like.create({
+      post: postId,
+      likedBy: req.user._id,
+    });
+
+    postLiked = true;
+
+    if (!postLike)
+      throw new ApiError(500, "Something went wrong while creating a like");
+  } else {
+    await Like.findByIdAndDelete(isLiked._id);
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, { postLiked }, "post like toggled successfully")
+    );
+});
+
 // TODO: testing of the api is pending, since the likes are not created in db
 // get all the videos that are liked by the logged in user
 const getLikedVideos = asyncHandler(async (req, res) => {
@@ -112,4 +145,4 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     );
 });
 
-export { toggleLikeVideo, toggleLikeComment, getLikedVideos };
+export { toggleLikeVideo, toggleLikeComment, toggleLikePost, getLikedVideos };
