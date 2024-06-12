@@ -113,13 +113,15 @@ const toggleLikePost = asyncHandler(async (req, res) => {
     );
 });
 
-// TODO: testing of the api is pending, since the likes are not created in db
 // get all the videos that are liked by the logged in user
 const getLikedVideos = asyncHandler(async (req, res) => {
   const likedVideos = await Like.aggregate([
     {
       $match: {
         likedBy: new mongoose.Types.ObjectId(req.user._id),
+        video: {
+          $exists: true,
+        },
       },
     },
     {
