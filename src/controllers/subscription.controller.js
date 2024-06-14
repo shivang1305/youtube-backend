@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { Subscription } from "../models/subscription.model.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -10,7 +9,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
   if (!channelId) throw new ApiError(404, "channelId is missing");
 
   //check of the logged in user is a subscriber or not
-  const isSubscriber = await Subscription.find({
+  const isSubscriber = await Subscription.findOne({
     subscriber: req.user._id,
     channel: channelId,
   });
