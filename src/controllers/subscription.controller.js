@@ -63,4 +63,35 @@ const getChannelSubscribers = asyncHandler(async (req, res) => {
     );
 });
 
-export { toggleSubscription, getChannelSubscribers };
+const getSubscribedChannels = asyncHandler(async (req, res) => {
+  // here subscriberId = req.user._id (logged in user id)
+  // a user can only see his own subscribed channels list
+
+  const subscribedChannels = await Subscription.find({
+    subscriber: req.user._id,
+  });
+
+  if (!subscribedChannels.length) {
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { message: "No channel is subscribed by the user" },
+          "Subscribed channel list fetched successfully"
+        )
+      );
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        subscribedChannels,
+        "Subscribed channel list fetched successfully"
+      )
+    );
+});
+
+export { toggleSubscription, getChannelSubscribers, getSubscribedChannels };
