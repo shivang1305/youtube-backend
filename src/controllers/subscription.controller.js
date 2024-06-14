@@ -41,4 +41,26 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     );
 });
 
-export { toggleSubscription };
+const getChannelSubscribers = asyncHandler(async (req, res) => {
+  const { channelId } = req.params;
+
+  if (!channelId) throw new ApiError(404, "channelId is missing");
+
+  const subscribers = await Subscription.find({
+    channel: channelId,
+  });
+
+  const subscriberCount = subscribers.length | 0;
+
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        { subscriberCount },
+        "Subscriber count fetched successfully"
+      )
+    );
+});
+
+export { toggleSubscription, getChannelSubscribers };
