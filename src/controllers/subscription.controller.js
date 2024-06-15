@@ -67,9 +67,35 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
   // here subscriberId = req.user._id (logged in user id)
   // a user can only see his own subscribed channels list
 
-  const subscribedChannels = await Subscription.find({
-    subscriber: req.user._id,
-  });
+  const subscribedChannels = await Subscription.aggregate([
+    {
+      $match: {
+        subscriber: req.user._id,
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "channel",
+        foreignField: "_id",
+        as: "channel",
+        pipeline: [
+          {
+            $project: {
+              username: 1,
+              fullName: 1,
+              avatar: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        channel: 1,
+      },
+    },
+  ]);
 
   if (!subscribedChannels.length) {
     return res
