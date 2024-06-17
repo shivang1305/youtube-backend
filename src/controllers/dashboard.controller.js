@@ -29,4 +29,8 @@ const getChannelVideos = asyncHandler(async (req, res) => {
     );
 });
 
-export { getChannelVideos };
+const getChannelStats = asyncHandler(async (req, res) => {
+  // TODO: implement the api
+});
+
+export { getChannelVideos, getChannelStats };

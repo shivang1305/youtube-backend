@@ -66,4 +66,4 @@ const getVideoComments = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10 } = req.query;
 });
 
-export { addComment, updateComment, deleteComment };
+export { addComment, updateComment, deleteComment, getVideoComments };
