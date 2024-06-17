@@ -3,6 +3,7 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 import {
   addVideo,
   createPlaylist,
+  getPlaylist,
   getUserPlaylists,
   removeVideo,
   updatePlaylist,
@@ -20,5 +21,6 @@ router
 
 router.route("/update/:playlistId").patch(updatePlaylist);
 router.route("/user/:userId").get(getUserPlaylists);
+router.route("/:playlistId").get(getPlaylist);
 
 export default router;

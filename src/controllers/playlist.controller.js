@@ -129,10 +129,26 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     );
 });
 
+const getPlaylist = asyncHandler(async (req, res) => {
+  // TODO: implement the api
+  const { playlistId } = req.params;
+
+  if (playlistId) throw new ApiError(404, "playlistId is missing");
+
+  const playlist = await Playlist.findById(playlistId);
+
+  if (!playlist) throw new ApiError(404, "no playlist found");
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, playlist, "playlist fetched sucessfully"));
+});
+
 export {
   createPlaylist,
   addVideo,
   removeVideo,
   updatePlaylist,
   getUserPlaylists,
+  getPlaylist,
 };
