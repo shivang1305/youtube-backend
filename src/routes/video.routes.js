@@ -2,6 +2,7 @@ import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import {
   deleteVideo,
+  getAllVideos,
   getVideoById,
   publishVideo,
   togglePublishStatus,
@@ -11,6 +12,8 @@ import { upload } from "../middlewares/multer.middleware.js";
 
 const router = Router();
 router.use(verifyJWT);
+
+router.route("/search-videos").get(getAllVideos);
 
 router.route("/publish").post(
   upload.fields([

@@ -9,7 +9,74 @@ import ApiResponse from "../utils/ApiResponse.js";
 import mongoose from "mongoose";
 
 const getAllVideos = asyncHandler(async (req, res) => {
-  //TODO: implment this api
+  const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.body;
+
+  if (!query || query.trim() === "")
+    throw new ApiError(400, "Query is required");
+
+  const videos = await Video.aggregate([
+    {
+      $match: {
+        $or: [
+          {
+            title: { $regex: query, $options: "i" },
+          },
+          {
+            description: { $regex: query, $options: "i" },
+          },
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        foreignField: "_id",
+        localField: "owner",
+        as: "owner",
+        pipeline: [
+          {
+            $project: {
+              avatar: 1,
+              username: 1,
+              fullName: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        videoFile: 1,
+        thumbnail: 1,
+        owner: 1,
+        _id: 1,
+        title: 1,
+        description: 1,
+        views: 1,
+        duration: 1,
+        isPublished: 1,
+      },
+    },
+
+    // sorting & pagination
+    {
+      $sort: {
+        [sortBy]: sortType === "asc" ? 1 : -1,
+      },
+    },
+    {
+      $skip: (page - 1) * limit,
+    },
+    {
+      $limit: parseInt(limit),
+    },
+  ]);
+
+  if (!videos.length) throw new ApiError(404, "No videos found");
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, videos, "Videos fetched successfully"));
 });
 
 const publishVideo = asyncHandler(async (req, res) => {
