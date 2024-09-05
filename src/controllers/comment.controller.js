@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Comment } from "../models/comment.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
@@ -61,9 +62,76 @@ const deleteComment = asyncHandler(async (req, res) => {
 });
 
 const getVideoComments = asyncHandler(async (req, res) => {
-  //TODO: get all comments for a video
   const { videoId } = req.params;
   const { page = 1, limit = 10 } = req.query;
+
+  if (!videoId) throw new ApiError(404, "videoId is required");
+
+  const comments = await Comment.aggregate([
+    {
+      $match: {
+        video: new mongoose.Types.ObjectId(videoId),
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        foreignField: "_id",
+        localField: "owner",
+        as: "owner",
+        pipeline: [
+          {
+            $project: {
+              username: 1,
+              fullName: 1,
+              avatar: 1,
+              _id: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: "likes",
+        foreignField: "comment",
+        localField: "_id",
+        as: "likes",
+      },
+    },
+    {
+      $addFields: {
+        likesCount: {
+          $size: "$likes",
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        username: 1,
+        fullName: 1,
+        avatar: 1,
+        content: 1,
+        owner: 1,
+        likesCount: 1,
+      },
+    },
+
+    // pagination
+    {
+      $skip: (page - 1) * limit,
+    },
+    {
+      $limit: parseInt(limit),
+    },
+  ]);
+
+  if (!comments.length) throw new ApiError(404, "No comments found");
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, comments, "comments fetched successfully"));
 });
 
 export { addComment, updateComment, deleteComment, getVideoComments };
